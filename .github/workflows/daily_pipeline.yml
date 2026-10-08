@@ -1,0 +1,44 @@
+name: Daily PortfolioPulse pipeline
+
+on:
+  schedule:
+    - cron: "0 22 * * 1-5"   # 22:00 UTC, Mon-Fri (after the US market closes)
+  workflow_dispatch:          # lets you run it by hand from the Actions tab
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+      NEON_HOST: ${{ secrets.NEON_HOST }}
+      NEON_USER: ${{ secrets.NEON_USER }}
+      NEON_PASSWORD: ${{ secrets.NEON_PASSWORD }}
+      NEON_DB: ${{ secrets.NEON_DB }}
+      AIRBYTE_CLIENT_ID: ${{ secrets.AIRBYTE_CLIENT_ID }}
+      AIRBYTE_CLIENT_SECRET: ${{ secrets.AIRBYTE_CLIENT_SECRET }}
+      AIRBYTE_CONNECTION_IDS: ${{ secrets.AIRBYTE_CONNECTION_IDS }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install yfinance pandas psycopg2-binary python-dotenv requests dbt-postgres
+
+      - name: 1. Refresh stock prices (yfinance -> Neon)
+        run: python scripts/load_stock_prices.py
+
+      - name: 2. Trigger Airbyte syncs (Google Sheet trades + USD/NGN rates)
+        run: python scripts/trigger_airbyte.py
+
+      - name: 3. dbt run
+        working-directory: dbt
+        run: dbt run --profiles-dir .
+
+      - name: 4. dbt test
+        working-directory: dbt
+        run: dbt test --profiles-dir .
