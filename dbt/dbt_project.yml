@@ -1,0 +1,17 @@
+name: portfoliopulse
+version: "1.0.0"
+config-version: 2
+
+profile: portfoliopulse
+
+model-paths: ["models"]
+test-paths: ["tests"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  portfoliopulse:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table

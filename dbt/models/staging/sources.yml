@@ -1,0 +1,16 @@
+version: 2
+
+sources:
+  - name: raw
+    description: "Untouched data loaded by the yfinance script and Airbyte."
+    schema: raw
+    tables:
+      - name: stock_prices
+        description: "Daily prices from yfinance (scripts/load_stock_prices.py)."
+        loaded_at_field: loaded_at
+        freshness:
+          warn_after: {count: 4, period: day}
+      - name: trades
+        description: "Manual trade log from Google Sheets (Airbyte). All columns arrive as text."
+      - name: api_usd_ngn_rates
+        description: "One row per day from the custom Airbyte connector. 'usd' is JSON with every currency rate."

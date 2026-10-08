@@ -1,0 +1,38 @@
+version: 2
+
+models:
+  - name: mart_portfolio_value
+    description: "Daily value and unrealized gain/loss per position, in USD and NGN."
+    columns:
+      - name: position_key
+        description: "ticker|price_date, unique per row."
+        data_tests:
+          - unique
+          - not_null
+      - name: shares_held
+        data_tests:
+          - not_null
+      - name: market_value_usd
+        data_tests:
+          - not_null
+      - name: usd_to_ngn
+        description: "Never null: gaps in the rate API reuse the latest earlier rate."
+        data_tests:
+          - not_null
+      - name: market_value_ngn
+        data_tests:
+          - not_null
+
+  - name: mart_portfolio_daily
+    description: "Total portfolio value per day, USD and NGN."
+    columns:
+      - name: price_date
+        data_tests:
+          - unique
+          - not_null
+      - name: total_market_value_usd
+        data_tests:
+          - not_null
+      - name: total_market_value_ngn
+        data_tests:
+          - not_null

@@ -1,0 +1,17 @@
+# Connection details come from environment variables, so no secrets live in git.
+# Locally they are loaded from .env; in GitHub Actions they come from repository secrets.
+portfoliopulse:
+  target: prod
+  outputs:
+    prod:
+      type: postgres
+      host: "{{ env_var('NEON_HOST') }}"
+      user: "{{ env_var('NEON_USER') }}"
+      password: "{{ env_var('NEON_PASSWORD') }}"
+      dbname: "{{ env_var('NEON_DB') }}"
+      port: 5432
+      schema: analytics
+      threads: 4
+      sslmode: require
+      connect_timeout: 30   # Neon's free tier can take a few seconds to wake up
+      retries: 3
